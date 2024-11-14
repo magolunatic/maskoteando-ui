@@ -73,7 +73,7 @@ function Register() {
           />
         </div>
         <button type="submit" className="btn btn-primary w-100 mb-2">Registrarse</button>
-        <button type="button" className="btn btn-secondary w-100" onClick={() => navigate('/login')}>Volver</button>
+        <button type="button" className="btn btn-secondary w-100" onClick={() => navigate('/home')}>Volver</button>
       </form>
     </div>
   );

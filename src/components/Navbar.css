@@ -1,0 +1,19 @@
+/* Navbar.css */
+
+.custom-navbar {
+    background-color: #e4dfe2; /* Cambia el color de fondo a un color oscuro */
+  }
+  
+  .custom-navbar .navbar-nav .nav-link {
+    color: #2e353d !important; /* Cambia el color de los enlaces a blanco */
+  }
+  
+  .custom-navbar .navbar-nav .nav-link:hover {
+    color: #f80a5a !important; /* Cambia el color al pasar el mouse */
+  }
+  
+  .custom-navbar .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+

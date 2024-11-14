@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function Login({ setAccessToken }) {  // Recibe setAccessToken como prop
+function Login({ setAccessToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isUserFocused, setIsUserFocused] = useState(false);  // Estado para el campo usuario
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);  // Estado para el campo contraseña
   const navigate = useNavigate();
 
   const handleLogin = async (event) => {
@@ -18,39 +20,50 @@ function Login({ setAccessToken }) {  // Recibe setAccessToken como prop
         password,
       });
 
-      // Verificar si se recibieron los tokens correctamente
-      const { access, refresh } = response.data;
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
+      localStorage.setItem('isAuthenticated', 'true');
 
-      if (access && refresh) {
-        // Guardar los tokens en el localStorage
-        localStorage.setItem('access_token', access);
-        localStorage.setItem('refresh_token', refresh);
-        localStorage.setItem('isAuthenticated', 'true');
-
-        // Actualizar el estado de accessToken
-        setAccessToken(access);
-
-        // Redirigir a la página Home
-        navigate('/home');
-      } else {
-        throw new Error('No se recibieron los tokens de autenticación');
-      }
+      setAccessToken(response.data.access);
+      navigate('/home');
     } catch (error) {
-      if (error.response && error.response.data) {
-        // Si el servidor envía un mensaje de error específico, lo mostramos
-        setError(error.response.data.detail || 'Error al iniciar sesión');
-      } else {
-        // Si hay un error de red u otro problema, mostramos un mensaje genérico
-        setError('Credenciales inválidas, intenta de nuevo');
-      }
+      setError('Credenciales inválidas, intenta de nuevo');
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <form onSubmit={handleLogin} className="p-4 border rounded shadow" style={{ width: '300px' }}>
-        <h3 className="mb-3 text-center">Iniciar Sesión</h3>
+    <div 
+      style={{
+        backgroundImage: `url('/images/perro2.png')`, // Ruta de la imagen de fondo
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <form onSubmit={handleLogin} className="p-4 border rounded shadow" style={{ backgroundColor: 'white' }}>
+        
+        <div className="navbar-brand d-flex align-items-center">
+        <h3 className="mb-3 text-center">VetSystem</h3>
         {error && <div className="alert alert-danger" role="alert">{error}</div>}
+          <img
+            src="images/image.png"  // Ruta de la imagen
+            alt="Logo"
+            style={{ width: '80px', height: '80px', marginRight: '8px' }}
+          />
+        </div>
+
+        <div className="text-center mb-3">
+          <img 
+            src={isPasswordFocused ? '/images/logo2.png' : isUserFocused ? '/images/LOGO3.png' : '/images/logo6.png'} 
+            alt="Gatito" 
+            style={{ width: '100px', height: 'auto' }} 
+          />
+        </div>
+
         <div className="mb-3">
           <label htmlFor="username" className="form-label">Usuario</label>
           <input 
@@ -59,6 +72,8 @@ function Login({ setAccessToken }) {  // Recibe setAccessToken como prop
             id="username" 
             value={username} 
             onChange={(e) => setUsername(e.target.value)} 
+            onFocus={() => setIsUserFocused(true)}  // Cuando el usuario enfoca el campo
+            onBlur={() => setIsUserFocused(false)}  // Cuando el usuario deja el campo
             required 
           />
         </div>
@@ -70,11 +85,21 @@ function Login({ setAccessToken }) {  // Recibe setAccessToken como prop
             id="password" 
             value={password}
             onChange={(e) => setPassword(e.target.value)} 
+            onFocus={() => setIsPasswordFocused(true)}  // Cuando la contraseña enfoca el campo
+            onBlur={() => setIsPasswordFocused(false)}  // Cuando la contraseña deja el campo
             required 
           />
         </div>
-        <button type="submit" className="btn btn-primary w-100 mb-2">Ingresar</button>
-        <button type="button" className="btn btn-secondary w-100" onClick={() => navigate('/register')}>Registrarse</button>
+        <button type="submit" className="btn  mb-2"style={{
+          backgroundColor: '#563A9C',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          fontSize: '16px',
+          borderRadius: '5px',
+          display: 'block', // Para centrar con margin auto
+          margin: '0 auto'
+          }}>Ingresar</button>
       </form>
     </div>
   );

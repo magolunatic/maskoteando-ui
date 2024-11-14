@@ -1,70 +1,54 @@
 import React from 'react';
-
 import { useNavigate } from 'react-router-dom';
-
-import { toast } from 'react-toastify';
-
+//import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import '../index.css';  // Asegúrate de que esta ruta sea correcta
+
+
 
 const Home = () => {
-
   const navigate = useNavigate();
 
-  const ir_modulo_productos = () => {
-    navigate('/productos');
+  // Función de navegación para el botón de registro
+  const irRegistro = () => {
+    navigate('/register');
   };
-
-  const ir_modulo_mascotas = () => {
-    navigate('/mascotas');
-  };
-
-  const ir_modulo_clientes = () => {
-    navigate('/clientes');
-  };
-
-  const notify = () => {
-    toast.success('¡Has hecho clic en el botón!', {
-      position: "top-right",  // Usa una cadena en lugar de una constante
-      autoClose: 5000,  // La notificación se cierra automáticamente después de 3 segundos
-    });
-  }
 
   return (
-    <div>
-      <br></br>
-      <br></br>
-      <div className="container">
-        
-        <h1 className="text-center">Bienvenido al módulo Home</h1>
-
-        <br></br>
-        <br></br>
-
-        <button className="btn btn-success" onClick={ir_modulo_productos}>
-          Productos
-        </button>
-        <br></br>
-        <br></br>
-
-        <button className="btn btn-primary" onClick={ir_modulo_mascotas}>
-          Mascotas
-        </button>
-
-        <br></br>
-        <br></br>
-
-        <button className="btn btn-info" onClick={ir_modulo_clientes}>
-          Clientes
-        </button>
-        
-        <br></br>
-        <br></br>
-
-        <button className="btn btn-warning" onClick={notify}>
-          Notificación
-        </button>
-
+    <div 
+      style={{
+        backgroundImage: `url('/images/perro.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        color: 'black',
+        paddingTop: '20px',
+      }}
+    >
+      <h1 className="text-center">Bienvenido a  VetSystem</h1>
+      <div className="text-center mb-4">
+        <img src="/images/LOGO MASKOTEANDO.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
       </div>
+      <div className="d-flex justify-content-center gap-3 my-3">
+        {/* Aplica la clase personalizada aquí */}
+        <button className="btn" onClick={irRegistro}  style={{
+    backgroundColor: '#563A9C',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    fontSize: '16px',
+    borderRadius: '5px',
+  }}>
+          Registrarse
+        </button>
+      </div>
+
+      
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import './Navbar.css'; // Importar el archivo CSS
+
 
 const Navbar = ({ setAccessToken }) => {
   const navigate = useNavigate();
@@ -18,9 +20,30 @@ const Navbar = ({ setAccessToken }) => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+    <nav className="navbar navbar-expand-lg navbar-light custom-navbar">
+      
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/home">Maskoteando App</Link>
+        <div className="navbar-brand d-flex align-items-center">
+          <img
+            src="images/image.png"  // Ruta de la imagen
+            alt="Logo"
+            style={{ width: '50px', height: '50px', marginRight: '8px' }}
+          />
+        </div>
+        {/* Este es el nombre estático sin redirección */}
+        <span className="navbar-brand">VetSystem</span>
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav">
             <li className="nav-item">
@@ -39,9 +62,15 @@ const Navbar = ({ setAccessToken }) => {
         </div>
         {/* Botón Cerrar Sesión */}
         <button 
-          className="btn btn-danger ms-auto"
-          onClick={handleLogout}
-        >
+          className="btn  ms-auto"
+          onClick={handleLogout} style={{
+            backgroundColor: '#CC2B52',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            fontSize: '16px',
+            borderRadius: '5px',
+          }}>
           Cerrar Sesión
         </button>
       </div>
