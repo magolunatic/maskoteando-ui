@@ -1,19 +1,35 @@
-/* Navbar.css */
-
+/* Fondo claro del navbar */
 .custom-navbar {
-    background-color: #e4dfe2; /* Cambia el color de fondo a un color oscuro */
-  }
-  
-  .custom-navbar .navbar-nav .nav-link {
-    color: #2e353d !important; /* Cambia el color de los enlaces a blanco */
-  }
-  
-  .custom-navbar .navbar-nav .nav-link:hover {
-    color: #f80a5a !important; /* Cambia el color al pasar el mouse */
-  }
-  
-  .custom-navbar .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-  }
+  background-color:#f8f6f8;
+  padding: 0.3rem 1rem; /* Reducir padding para hacerlo más fino */
+}
 
+/* Estilos de los enlaces */
+.custom-navbar .navbar-nav .nav-link {
+  color:  #2e353d !important; /* Color inicial */
+  transition: all 0.3s ease-in-out; /* Transición para el efecto */
+}
+
+/* Hover con sombra lila */
+.custom-navbar .navbar-nav .nav-link:hover {
+  color: #5b1e9e !important; /* Cambiar color del texto al pasar mouse */
+  box-shadow: 0px 4px 8px rgba(186, 85, 211, 0.6); /* Sombra lila */
+  border-radius: 5px; /* Bordes redondeados */
+  background-color: #cb9ef5; /* Fondo lila */
+}
+
+/* Botón de cerrar sesión */
+.logout-button {
+  background-color: #cc2b52; /* Fondo del botón */
+  color: white;
+  border: none;
+  padding: 8px 16px; /* Ajustar padding */
+  font-size: 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out; /* Transición suave */
+}
+
+/* Hover del botón de cerrar sesión */
+.logout-button:hover {
+  background-color: #b2223b; /* Color más oscuro al pasar el mouse */
+}

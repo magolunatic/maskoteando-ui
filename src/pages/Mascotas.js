@@ -20,6 +20,7 @@ const Mascotas = () => {
         cliente: ''
     });
     const [clientes, setClientes] = useState([]);
+    const [mascotaEditando, setMascotaEditando] = useState(null); // Para guardar la mascota que estamos editando
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -64,15 +65,35 @@ const Mascotas = () => {
             cliente: clienteId,
         };
 
-        axios.post('http://localhost:8000/api/mascotas/', nuevaMascota, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => setMascotas([...mascotas, response.data]))
-        .catch(error => console.error("Error al agregar la mascota:", error.response?.data));
+        if (mascotaEditando) {
+            // Si estamos editando, hacer PUT
+            axios.put(`http://localhost:8000/api/mascotas/${mascotaEditando.id}/`, nuevaMascota, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                // Actualizar las mascotas con los nuevos datos
+                setMascotas(mascotas.map(mascota => 
+                    mascota.id === mascotaEditando.id ? response.data : mascota
+                ));
+                setMascotaEditando(null); // Limpiar el estado de edición
+            })
+            .catch(error => console.error("Error al editar la mascota:", error.response?.data));
+        } else {
+            // Si no estamos editando, hacer POST
+            axios.post('http://localhost:8000/api/mascotas/', nuevaMascota, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => setMascotas([...mascotas, response.data]))
+            .catch(error => console.error("Error al agregar la mascota:", error.response?.data));
+        }
 
+        // Limpiar los campos del formulario después de agregar o editar
         setNombre('');
         setFechaNacimiento('');
         setRaza('');
@@ -91,10 +112,21 @@ const Mascotas = () => {
         .catch(error => console.error(error));
     };
 
+    const editarMascota = (mascota) => {
+        setMascotaEditando(mascota); // Cargar la mascota en el estado de edición
+        setNombre(mascota.nombre);
+        setFechaNacimiento(mascota.fecha_nacimiento);
+        setRaza(mascota.raza);
+        setColor(mascota.color);
+        setEspecie(mascota.especie);
+        setSexo(mascota.sexo);
+        setClienteId(mascota.cliente);
+    };
+
     return (
         <div>
             <div className="container">
-                <h1 className="text-center">Mascotas</h1>
+                <h1 className="text-center">Pacientes</h1>
                 <div 
                     style={{
                         position: 'fixed',
@@ -110,18 +142,17 @@ const Mascotas = () => {
                     }}
                 ></div>
                 <div className="text-center mb-4">
-                    <img src="/images/LOGO MASKOTEANDO.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
+                    <img src="/images/maskoteando.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
                 </div>
 
-                {/* Aquí se utiliza una fila para tener dos columnas */}
+                {/* Formulario de Registro */}
                 <div className="row">
-                    {/* Columna para el ABM de Mascotas */}
                     <div className="col-md-6 mb-4">
                         <div className="card mx-auto">
                             <div className="card-body">
-                                <h5 className="card-title text-center">Pacientes</h5>
+                                <h5 className="card-title text-center">Registro de Pacientes</h5>
                                 <form>
-                                    {/* Campos del formulario para agregar mascotas */}
+                                    {/* Campos del formulario para agregar/editar mascotas */}
                                     <div className="mb-3">
                                         <label htmlFor="nombre" className="form-label">Nombre</label>
                                         <input 
@@ -190,62 +221,69 @@ const Mascotas = () => {
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="sexo" className="form-label">Sexo</label>
-                                            <select 
-                                                id="sexo" 
-                                                className="form-select" 
-                                                value={sexo} 
-                                                onChange={(e) => setSexo(e.target.value)}>
-                                                <option value="">Selecciona un sexo</option>
-                                                <option value="M">Macho</option>
-                                                <option value="H">Hembra</option>
-                                            </select>
+                                        <select 
+                                            id="sexo" 
+                                            className="form-select" 
+                                            value={sexo} 
+                                            onChange={(e) => setSexo(e.target.value)}>
+                                            <option value="">Selecciona un sexo</option>
+                                            <option value="M">Macho</option>
+                                            <option value="H">Hembra</option>
+                                        </select>
                                     </div>
                                     <div className="mb-3">
-                                        <label htmlFor="cliente" className="form-label">Cliente</label>
+                                        <label htmlFor="clienteId" className="form-label">Cliente</label>
                                         <select 
-                                            id="cliente" 
+                                            id="clienteId" 
                                             className="form-select" 
                                             value={clienteId} 
-                                            onChange={(e) => setClienteId(e.target.value)}>
-                                            <option value="">Selecciona un cliente</option>
+                                            onChange={(e) => setClienteId(e.target.value)}
+                                        >
+                                            <option value="">Seleccionar...</option>
                                             {clientes.map(cliente => (
-                                                <option key={cliente.id} value={cliente.id}>
-                                                    {cliente.nombre} - CI: {cliente.ci}
-                                                </option>
+                                                <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
                                             ))}
                                         </select>
                                     </div>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-success w-100" 
-                                        onClick={agregarMascota}>
-                                        Agregar
-                                    </button>
+
+                                    <div className="text-center">
+                                        <button type="button" className="btn w-100" style={{
+                                        backgroundColor: '#563A9C',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 20px',
+                                        fontSize: '16px',
+                                        borderRadius: '5px',
+                                        display: 'block',
+                                        margin: '0 auto'
+                                    }} onClick={agregarMascota}>
+                                            {mascotaEditando ? 'Actualizar Mascota' : 'Agregar'}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    {/* Columna para el listado de Mascotas */}
+                    {/* Tabla de Mascotas */}
                     <div className="col-md-6">
-                        <h3 className="text-center">Listado de Mascotas</h3>
-                        <table className="table table-striped">
+                        <table className="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th scope="col">Nombre</th>
-                                    <th scope="col">Fecha de Nacimiento</th>
-                                    <th scope="col">Raza</th>
-                                    <th scope="col">Color</th>
-                                    <th scope="col">Especie</th>
-                                    <th scope="col">Sexo</th>
-                                    <th scope="col">Cliente</th>
-                                    <th scope="col">Acciones</th>
+                                    <th>Nombre</th>
+                                    <th>Fecha de Nacimiento</th>
+                                    <th>Raza</th>
+                                    <th>Color</th>
+                                    <th>Especie</th>
+                                    <th>Sexo</th>
+                                    <th>Cliente</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {mascotas.map(mascota => (
                                     <tr key={mascota.id}>
-                                        <td>{mascota.nombre}</td>
+                                        <td >{mascota.nombre}</td>
                                         <td>{mascota.fecha_nacimiento}</td>
                                         <td>{mascota.raza}</td>
                                         <td>{mascota.color}</td>
@@ -253,7 +291,18 @@ const Mascotas = () => {
                                         <td>{mascota.sexo}</td>
                                         <td>{mascota.cliente}</td>
                                         <td>
-                                            <button className="btn btn-danger" onClick={() => eliminarMascota(mascota.id)}>
+                                            {/* Editar */}
+                                            <button 
+                                                className="btn btn-warning btn-sm"
+                                                onClick={() => editarMascota(mascota)}
+                                            >
+                                                Editar
+                                            </button>
+                                            {/* Eliminar */}
+                                            <button 
+                                                className="btn btn-danger btn-sm ml-2"
+                                                onClick={() => eliminarMascota(mascota.id)}
+                                            >
                                                 Eliminar
                                             </button>
                                         </td>

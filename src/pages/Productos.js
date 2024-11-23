@@ -149,14 +149,14 @@ const Productos = () => {
             
             <h1 className="text-center">Productos</h1>
             <div className="text-center mb-4">
-                <img src="/images/LOGO MASKOTEANDO.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
+                <img src="/images/maskoteando.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
             </div>
             <div className="row">
                 {/* Formulario para agregar productos */}
-                <div className="col-md-6">
-                    <div className="card">
+                <div className="col-md-6"style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <div className="card" style={{ padding: '10px' }}>
                         <div className="card-body">
-                            <h5 className="card-title text-center">Productos Nuevos</h5>
+                            <h5 className="card-title text-center">Registro de Productos</h5>
                             <form>
                                 <div className="mb-3">
                                     <label htmlFor="nombre" className="form-label">Nombre</label>
@@ -272,9 +272,9 @@ const Productos = () => {
                                     <td>{producto.stock}</td>
                                     <td>
                                         <button 
-                                            className="btn btn-warning btn-sm" 
+                                            className="btn  btn-danger w-2" 
                                             onClick={() => eliminarProducto(producto.id)}>
-                                            X
+                                            eliminar
                                         </button>
                                     </td>
                                 </tr>

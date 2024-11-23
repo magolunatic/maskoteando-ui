@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css'; // Importar el archivo CSS
 
-
 const Navbar = ({ setAccessToken }) => {
   const navigate = useNavigate();
 
@@ -21,16 +20,15 @@ const Navbar = ({ setAccessToken }) => {
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light custom-navbar">
-      
       <div className="container-fluid">
         <div className="navbar-brand d-flex align-items-center">
           <img
-            src="images/image.png"  // Ruta de la imagen
+            src="images/image.png" // Ruta de la imagen
             alt="Logo"
             style={{ width: '50px', height: '50px', marginRight: '8px' }}
           />
         </div>
-        {/* Este es el nombre estático sin redirección */}
+        {/* Nombre estático sin redirección */}
         <span className="navbar-brand">VetSystem</span>
 
         <button
@@ -47,30 +45,37 @@ const Navbar = ({ setAccessToken }) => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav">
             <li className="nav-item">
-              <Link className="nav-link" to="/home">Home</Link>
+              <Link className="nav-link" to="/home">
+                Home
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/productos">Productos</Link>
+              <Link className="nav-link" to="/productos">
+                Productos
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/mascotas">Mascotas</Link>
+              <Link className="nav-link" to="/mascotas">
+                Pacientes
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/clientes">Clientes</Link>
+              <Link className="nav-link" to="/clientes">
+                Clientes
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/ventas">
+                Ventas
+              </Link>
             </li>
           </ul>
         </div>
         {/* Botón Cerrar Sesión */}
-        <button 
-          className="btn  ms-auto"
-          onClick={handleLogout} style={{
-            backgroundColor: '#CC2B52',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            fontSize: '16px',
-            borderRadius: '5px',
-          }}>
+        <button
+          className="btn ms-auto logout-button"
+          onClick={handleLogout}
+        >
           Cerrar Sesión
         </button>
       </div>

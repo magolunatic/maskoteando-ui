@@ -9,6 +9,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import Clientes from './pages/Clientes';
+import Ventas from './pages/ventas';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css'; // Importa Bootstrap Icons
 
 function App() {
   const [accessToken, setAccessToken] = useState(localStorage.getItem('access_token'));
@@ -27,10 +30,9 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className= "App">
         <ToastContainer />
-        <header className="App-header">
-          {accessToken && <Navbar setAccessToken={setAccessToken} />}  {/* Pasar setAccessToken como prop */}
+        {accessToken && <Navbar setAccessToken={setAccessToken} />}
           <Routes>
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login setAccessToken={setAccessToken} />} />
@@ -39,10 +41,13 @@ function App() {
             <Route path="/productos" element={accessToken ? <Productos /> : <Navigate to="/login" />} />
             <Route path="/mascotas" element={accessToken ? <Mascotas /> : <Navigate to="/login" />} />
             <Route path="/clientes" element={accessToken ? <Clientes /> : <Navigate to="/login" />} />
+            <Route path="/ventas" element={accessToken ? <Ventas /> : <Navigate to="/login" />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
-        </header>
-      </div>
+        </div>
+        <footer className="bg-dark text-white text-center py-3 mt-auto">
+          Desarrollado por Sandra Gisel Sanabria Monges | Estudiante de Analisis y sistemas Informaticos
+        </footer>
     </Router>
   );
 }
