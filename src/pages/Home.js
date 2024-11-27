@@ -21,7 +21,7 @@ const Home = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        minHeight: '86vh',
+        minHeight: '87vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',

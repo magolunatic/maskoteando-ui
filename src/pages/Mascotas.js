@@ -3,6 +3,8 @@ import axios from 'axios';
 
 const Mascotas = () => {
     const [mascotas, setMascotas] = useState([]);
+    const [filtroMascotas, setFiltroMascotas] = useState([]);
+    const [busqueda, setBusqueda] = useState('');
     const [nombre, setNombre] = useState('');
     const [fechaNacimiento, setFechaNacimiento] = useState('');
     const [raza, setRaza] = useState('');
@@ -27,7 +29,10 @@ const Mascotas = () => {
         axios.get('http://localhost:8000/api/mascotas/', {
             headers: { Authorization: `Bearer ${token}` },
         })
-        .then(response => setMascotas(response.data))
+        .then(response => {
+            setMascotas(response.data);
+            setFiltroMascotas(response.data); // Inicializa el filtro con todas las mascotas
+        })
         .catch(error => console.error(error));
 
         axios.get('http://localhost:8000/api/clientes/', {
@@ -36,6 +41,18 @@ const Mascotas = () => {
         .then(response => setClientes(response.data))
         .catch(error => console.error(error));
     }, []);
+
+     // Filtro dinámico basado en la búsqueda
+     useEffect(() => {
+        const resultado = mascotas.filter(
+            (mascota) =>
+                mascota.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+                mascota.raza.toLowerCase().includes(busqueda.toLowerCase()) ||
+                mascota.color.toLowerCase().includes(busqueda.toLowerCase())
+        );
+        setFiltroMascotas(resultado);
+    }, [busqueda, mascotas]);
+
 
     const validarCampo = (campo, valor) => {
         const soloLetras = /^[a-zA-Z\s]*$/;
@@ -150,7 +167,7 @@ const Mascotas = () => {
                     <div className="col-md-6 mb-4">
                         <div className="card mx-auto">
                             <div className="card-body">
-                                <h5 className="card-title text-center">Registro de Pacientes</h5>
+                                <h5 className="card-title text-center">Registro de Mascotas</h5>
                                 <form>
                                     {/* Campos del formulario para agregar/editar mascotas */}
                                     <div className="mb-3">
@@ -241,7 +258,7 @@ const Mascotas = () => {
                                         >
                                             <option value="">Seleccionar...</option>
                                             {clientes.map(cliente => (
-                                                <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
+                                                <option key={cliente.id} value={cliente.id}>{`${cliente.nombre} ${cliente.apellido}`}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -267,7 +284,21 @@ const Mascotas = () => {
 
                     {/* Tabla de Mascotas */}
                     <div className="col-md-6">
-                        <table className="table table-bordered">
+                    <h3 className="text-center">Listado de Mascotas</h3>
+                    <div className="d-flex align-items-center" style={{ marginLeft: 'auto', maxWidth: '300px' }}>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar mascotas"
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                        />
+                        <button className="btn btn-danger ms-2">
+                            <i className="bi bi-search"></i>
+                        </button>
+                    </div>
+                
+                        <table className="table table-striped" >
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
@@ -281,35 +312,43 @@ const Mascotas = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {mascotas.map(mascota => (
-                                    <tr key={mascota.id}>
-                                        <td >{mascota.nombre}</td>
-                                        <td>{mascota.fecha_nacimiento}</td>
-                                        <td>{mascota.raza}</td>
-                                        <td>{mascota.color}</td>
-                                        <td>{mascota.especie}</td>
-                                        <td>{mascota.sexo}</td>
-                                        <td>{mascota.cliente}</td>
-                                        <td>
-                                            {/* Editar */}
-                                            <button 
-                                                className="btn btn-warning btn-sm"
-                                                onClick={() => editarMascota(mascota)}
-                                            >
-                                                Editar
-                                            </button>
-                                            {/* Eliminar */}
-                                            <button 
-                                                className="btn btn-danger btn-sm ml-2"
-                                                onClick={() => eliminarMascota(mascota.id)}
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    {filtroMascotas.map((mascota) => {
+                    // Buscar el cliente asociado a esta mascota
+                    const cliente = clientes.find(c => c.id === mascota.cliente);
+
+                    return (
+                        <tr key={mascota.id}>
+                        <td>{mascota.nombre}</td>
+                        <td>{mascota.fecha_nacimiento}</td>
+                        <td>{mascota.raza}</td>
+                        <td>{mascota.color}</td>
+                        <td>{mascota.especie}</td>
+                        <td>{mascota.sexo}</td>
+                        <td>
+                            {/* Mostrar nombre y apellido del cliente o un mensaje de cliente desconocido */}
+                            {cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Cliente desconocido'}
+                        </td>
+                        <td>
+                            {/* Botón para editar */}
+                            <button 
+                                className="btn btn-warning btn-sm"
+                                onClick={() => editarMascota(mascota)}
+                                >
+                                Editar
+                            </button>
+                            {/* Botón para eliminar */}
+                            <button 
+                                className="btn btn-danger btn-sm ml-2"
+                                onClick={() => eliminarMascota(mascota.id)}
+                                >
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                );
+            })}
+        </tbody>
+    </table>
                     </div>
                 </div>
             </div>

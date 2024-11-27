@@ -10,6 +10,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import Clientes from './pages/Clientes';
 import Ventas from './pages/ventas';
+import Veterinarios from './pages/veterinarios';
+import Agendamientos from './pages/Agendamientos';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css'; // Importa Bootstrap Icons
 
@@ -42,6 +44,8 @@ function App() {
             <Route path="/mascotas" element={accessToken ? <Mascotas /> : <Navigate to="/login" />} />
             <Route path="/clientes" element={accessToken ? <Clientes /> : <Navigate to="/login" />} />
             <Route path="/ventas" element={accessToken ? <Ventas /> : <Navigate to="/login" />} />
+            <Route path="/veterinarios" element={<Veterinarios />} />
+            <Route path="/agendamientos" element={<Agendamientos />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </div>

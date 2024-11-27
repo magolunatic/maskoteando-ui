@@ -69,6 +69,16 @@ const Navbar = ({ setAccessToken }) => {
                 Ventas
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/veterinarios">
+                Veterinarios
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/Agendamientos">
+                Agendamientos
+              </Link>
+            </li>
           </ul>
         </div>
         {/* Botón Cerrar Sesión */}

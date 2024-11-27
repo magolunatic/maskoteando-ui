@@ -13,6 +13,7 @@ const Ventas = () => {
     const [fechaVenta, setFechaVenta] = useState('');
     const [total, setTotal] = useState(0);
     const [errores, setErrores] = useState('');
+    const [busqueda, setBusqueda] = useState(''); // Estado para la búsqueda
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -92,8 +93,21 @@ const Ventas = () => {
             .then(response => {
                 setVentas([...ventas, response.data]);
                 setErrores('');
-            })
-            .catch(() => setErrores('Error al agregar la venta.'));
+           // Recargar productos para reflejar el nuevo stock( cargue nuevo)
+           return axios.get('http://localhost:8000/api/productos/', { 
+            headers: { Authorization: `Bearer ${token}` } 
+        });
+    })
+    .then(response => {
+        setProductos(response.data);
+    })
+    .catch(err => {
+        if (err.response && err.response.data.detail) {
+            setErrores(err.response.data.detail);
+        } else {
+            setErrores('Error al agregar la venta o al recargar productos.');
+        }
+    }); //hasta aca
 
         setProductoId('');
         setCantidad('');
@@ -103,49 +117,102 @@ const Ventas = () => {
         setTotal(0);
     };
 
-    const eliminarVenta = (id) => {
-        const token = localStorage.getItem('access_token');
-        axios.delete(`http://localhost:8000/api/ventas/${id}/`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then(() => {
-                setVentas(ventas.filter(venta => venta.id !== id));
-                setErrores('');
-            })
-            .catch(() => setErrores('Error al eliminar la venta.'));
-    };
+    // Filtrar las ventas según la búsqueda
+    const ventasFiltradas = ventas.filter(venta => {
+        const cliente = clientes.find(c => c.id === venta.cliente);
+        const producto = productos.find(p => p.id === venta.producto);
 
+        const textoCliente = cliente ? `${cliente.nombre} ${cliente.apellido}` : '';
+        const textoProducto = producto ? producto.nombre : '';
+
+        // Verificar si la búsqueda coincide con el cliente o el producto
+        return textoCliente.toLowerCase().includes(busqueda.toLowerCase()) ||
+               textoProducto.toLowerCase().includes(busqueda.toLowerCase());
+    });
     // Función para exportar a Excel
     const exportarExcel = () => {
-        const ws = XLSX.utils.json_to_sheet(ventas); // Convierte las ventas a una hoja de cálculo
-        const wb = XLSX.utils.book_new(); // Crea un libro de trabajo
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas"); // Agrega la hoja al libro
-        XLSX.writeFile(wb, "ventas.xlsx"); // Genera el archivo y lo descarga
+        // Procesamos los datos para exportar
+        const datosExportar = ventas.map((venta) => {
+            const producto = productos.find((p) => p.id === venta.producto);
+            const cliente = clientes.find((c) => c.id === venta.cliente);
+    
+            return {
+                Producto: producto ? producto.nombre : "Desconocido", // Nombre del producto
+                Cantidad: venta.cantidad,
+                Precio: venta.precio_venta,
+                Total: venta.total,
+                "Fecha de Venta": venta.fecha_venta,
+                Cliente: cliente
+                ? `${cliente.nombre} ${cliente.apellido}` // Nombre completo del cliente
+                : "Desconocido",
+                Estado: venta.anulada ? "Anulada" : "Procesado", // Estado personalizado
+            };
+        });
+    
+        // Convertimos los datos procesados a una hoja de Excel
+        const ws = XLSX.utils.json_to_sheet(datosExportar);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+    
+        // Descargamos el archivo
+        XLSX.writeFile(wb, "ventas.xlsx");
     };
-
     // Función para imprimir la lista de ventas
     const imprimirVentas = () => {
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Lista de Ventas</title></head><body>');
         printWindow.document.write('<h1>Lista de Ventas</h1>');
-        printWindow.document.write('<table border="1"><thead><tr><th>ID Venta</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Cliente</th><th>Fecha Venta</th><th>Total</th></tr></thead><tbody>');
-        
-        ventas.forEach(venta => {
-            printWindow.document.write(`<tr>
-                <td>${venta.id}</td>
-                <td>${productos.find(p => p.id === venta.producto)?.nombre}</td>
-                <td>${venta.cantidad}</td>
-                <td>${venta.precio_venta}</td>
-                <td>{clientes.find(c => c.id === venta.cliente)?.nombre}</td>
-                <td>${venta.fecha_venta}</td>
-                <td>${venta.total}</td>
-            </tr>`);
+        printWindow.document.write('<table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">');
+        printWindow.document.write('<thead><tr>');
+        printWindow.document.write('<th>Producto</th>');
+        printWindow.document.write('<th>Cantidad</th>');
+        printWindow.document.write('<th>Precio</th>');
+        printWindow.document.write('<th>Total</th>');
+        printWindow.document.write('<th>Fecha de Venta</th>');
+        printWindow.document.write('<th>Cliente</th>');
+        printWindow.document.write('<th>Estado</th>');
+        printWindow.document.write('</tr></thead><tbody>');
+    
+        // Procesamos y mostramos cada venta
+        ventas.forEach((venta) => {
+            const producto = productos.find((p) => p.id === venta.producto);
+            const cliente = clientes.find((c) => c.id === venta.cliente);
+    
+            printWindow.document.write('<tr>');
+            printWindow.document.write(`<td>${producto ? producto.nombre : "Desconocido"}</td>`); // Nombre del producto
+            printWindow.document.write(`<td>${venta.cantidad}</td>`);
+            printWindow.document.write(`<td>${venta.precio_venta}</td>`);
+            printWindow.document.write(`<td>${venta.total}</td>`);
+            printWindow.document.write(`<td>${venta.fecha_venta}</td>`);
+            printWindow.document.write(`<td>${cliente ? `${cliente.nombre} ${cliente.apellido}` : "Cliente desconocido"}</td>`); // Nombre del cliente
+            printWindow.document.write(`<td>${venta.anulada ? "Anulada" : "Procesado"}</td>`); // Estado personalizado
+            printWindow.document.write('</tr>');
         });
-
+    
         printWindow.document.write('</tbody></table>');
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
+    };
+
+    const anularVenta = (id) => {
+        const token = localStorage.getItem('access_token');
+    
+        axios.post(`http://localhost:8000/api/ventas/${id}/anular/`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(() => {
+            // Actualiza la lista de ventas
+            setVentas(ventas.map(venta => 
+                venta.id === id ? { ...venta, anulada: true } : venta
+            ));
+            // Recarga los productos para reflejar el stock actualizado
+            return axios.get('http://localhost:8000/api/productos/', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        })
+        .then(response => setProductos(response.data))
+        .catch(() => setErrores('Error al anular la venta.'));
     };
 
     return (
@@ -237,7 +304,7 @@ const Ventas = () => {
                                         <option value="">Selecciona un cliente</option>
                                         {clientes.map(cliente => (
                                             <option key={cliente.id} value={cliente.id}>
-                                                {cliente.nombre}
+                                                {cliente.nombre} {cliente.apellido}
                                             </option>
                                         ))}
                                     </select>
@@ -270,50 +337,96 @@ const Ventas = () => {
                     </div>
                 </div>
                 <div className="col-md-6">
-                    <h5 className="text-center">Lista de Ventas</h5>
-                        <div className="card-body">
-                            <table className="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Producto</th>
-                                        <th scope="col">Cantidad</th>
-                                        <th scope="col">Precio</th>
-                                        <th scope="col">Total</th>
-                                        <th scope="col">fecha de venta</th>
-                                        <th scope="col">Acciones</th>
-                                    </tr>
-                                </thead>
+                    <h3 className="text-center">Listado de Ventas</h3>
+            
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                    {/* Botones */}
+                        <div>
+                            <button className="btn btn-success me-3" onClick={exportarExcel}>
+                            <i className="bi bi-file-earmark-excel"></i> Exportar a Excel
+                            </button>
+                            <button className="btn btn-info" onClick={imprimirVentas}>
+                            <i className="bi bi-printer"></i> Imprimir
+                            </button>
+                        </div>
+
+                    {/* Input de búsqueda */}
+                    <div className="input-group" style={{ maxWidth: '300px' }}>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar ventas"
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                        />
+                        <button className="btn btn-danger">
+                        <i className="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div className="card-body">
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Producto</th>
+                                <th scope="col">Cantidad</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">cliente</th>
+                                <th scope="col">fecha de venta</th>
+                                <th scope="col">Acciones</th>
+                            </tr>
+                        </thead>
+        <tbody>
+                    {ventasFiltradas.map(venta => {
+                        const cliente = clientes.find(c => c.id === venta.cliente);
+                        const producto = productos.find(p => p.id === venta.producto);
+
+                        return (
+                            <tr key={venta.id}>
+                                <td>{producto ? producto.nombre : 'Producto desconocido'}</td>
+                                <td>{venta.cantidad}</td>
+                                <td>{venta.precio}</td>
+                                <td>{venta.total}</td>
+                                <td>{cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Cliente desconocido'}</td>
+                                <td>{venta.fecha_venta}</td>
+                                <td>
+                                    <button className="btn btn-warning">Anular</button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
                                 <tbody>
-                                    {ventas.map((venta) => (
-                                        <tr key={venta.id}>
-                                            <td>{productos.find((p) => p.id === venta.producto)?.nombre}</td>
-                                            <td>{venta.cantidad}</td>
-                                            <td>{venta.precio_venta}</td>
-                                            <td>{venta.total}</td>
-                                            <td>{venta.fecha_venta}</td>
-                                            <td>
+                            {ventas.map((venta) => {
+                                const cliente = clientes.find(c => c.id === venta.cliente);
+                                const producto = productos.find(p => p.id === venta.producto);
+
+                                return (
+                                    <tr key={venta.id}>
+                                        <td>{producto ? producto.nombre : 'Producto desconocido'}</td>
+                                        <td>{venta.cantidad}</td>
+                                        <td>{venta.precio_venta}</td>
+                                        <td>{venta.total}</td>
+                                        <td>{cliente ? `${cliente.nombre} ${cliente.apellido}` : 'Cliente desconocido'}</td>
+                                        <td>{venta.fecha_venta}</td>
+                                        <td>
+                                            {venta.anulada ? (
+                                                <span className="text-danger">Anulado</span>
+                                            ) : (
                                                 <button 
-                                                    className="btn btn-danger"
-                                                    onClick={() => eliminarVenta(venta.id)}>
-                                                    Eliminar
+                                                    className="btn btn-warning"
+                                                    onClick={() => anularVenta(venta.id)}>
+                                                    Anular
                                                 </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
                             </table>
                         </div>
-                        <div className="row mb-3">
-                <div className="col-md-12 ml-0">
-                    {/* Botones con íconos */}
-                    <button className="btn btn-success me-3" onClick={exportarExcel}>
-                        <i className="bi bi-file-earmark-excel"></i> Exportar a Excel
-                    </button>
-                    <button className="btn btn-info" onClick={imprimirVentas}>
-                        <i className="bi bi-printer"></i> Imprimir
-                    </button>
-                </div>
-            </div>
                 </div>
             </div>
         </div>

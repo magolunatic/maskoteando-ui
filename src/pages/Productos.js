@@ -4,6 +4,8 @@ import axios from 'axios';
 
 const Productos = () => {
     const [productos, setProductos] = useState([]);
+    const [filtroProductos, setFiltroProductos] = useState([]);
+    const [busqueda, setBusqueda] = useState('');
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [costo, setCosto] = useState('');
@@ -27,9 +29,18 @@ const Productos = () => {
         })
         .then(response => {
             setProductos(response.data);
+            setFiltroProductos(response.data);
         })
         .catch(error => console.error(error));
     }, []);
+
+    useEffect(() => {
+        const resultado = productos.filter((producto) =>
+            producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+            producto.descripcion.toLowerCase().includes(busqueda.toLowerCase())
+        );
+        setFiltroProductos(resultado);
+    }, [busqueda, productos]);
 
     const validarCampo = (campo, valor) => {
         switch (campo) {
@@ -47,13 +58,14 @@ const Productos = () => {
                     setErrores(prev => ({ ...prev, descripcion: '' }));
                 }
                 break;
-            case 'costo':
-                if (isNaN(valor) || parseFloat(valor) <= 0) {
-                    setErrores(prev => ({ ...prev, costo: 'El costo debe ser un número positivo' }));
-                } else {
-                    setErrores(prev => ({ ...prev, costo: '' }));
-                }
-                break;
+                case 'costo':
+                    // Validación para costo: debe ser mayor que cero
+                    if (isNaN(valor) || parseFloat(valor) <= 0) {
+                        setErrores(prev => ({ ...prev, costo: 'El costo debe ser un número mayor que cero' }));
+                    } else {
+                        setErrores(prev => ({ ...prev, costo: '' }));
+                    }
+                    break;
             case 'precio_venta':
                 if (isNaN(valor) || parseFloat(valor) <= 0) {
                     setErrores(prev => ({ ...prev, precio_venta: 'El precio de venta debe ser un número positivo' }));
@@ -147,16 +159,17 @@ const Productos = () => {
                 }}
             ></div>
             
-            <h1 className="text-center">Productos</h1>
+            <h1 className="text-center">Productos y Servicios</h1>
             <div className="text-center mb-4">
                 <img src="/images/maskoteando.png" alt="Logo" className="img-fluid" style={{ maxWidth: '350px' }} />
             </div>
+            
             <div className="row">
                 {/* Formulario para agregar productos */}
                 <div className="col-md-6"style={{ maxWidth: '500px', margin: '0 auto' }}>
                     <div className="card" style={{ padding: '10px' }}>
                         <div className="card-body">
-                            <h5 className="card-title text-center">Registro de Productos</h5>
+                            <h5 className="card-title text-center">Registro de Productos-Servicios</h5>
                             <form>
                                 <div className="mb-3">
                                     <label htmlFor="nombre" className="form-label">Nombre</label>
@@ -193,10 +206,16 @@ const Productos = () => {
                                         className="form-control" 
                                         id="costo" 
                                         value={costo}
+                                        min="1" // Esto bloquea la entrada de números menores a 1
                                         onChange={(e) => {
-                                            setCosto(e.target.value);
-                                            validarCampo('costo', e.target.value);
-                                        }} 
+                                            const valor = e.target.value;
+                                            if (valor >= 1) { // Permite solo valores mayores o iguales a 1
+                                                setCosto(valor);
+                                                setErrores(prev => ({ ...prev, costo: '' })); // Limpia errores si es válido
+                                            } else {
+                                                setErrores(prev => ({ ...prev, costo: 'El costo debe ser un número mayor que cero' }));
+                                            }
+                                        }}  
                                     />
                                     {errores.costo && <small className="text-danger">{errores.costo}</small>}
                                 </div>
@@ -207,10 +226,16 @@ const Productos = () => {
                                         className="form-control" 
                                         id="precio_venta" 
                                         value={precio_venta}
+                                        min="1" // Esto bloquea la entrada de números menores a 1
                                         onChange={(e) => {
-                                            setPrecio_venta(e.target.value);
-                                            validarCampo('precio_venta', e.target.value);
-                                        }} 
+                                            const valor = e.target.value;
+                                            if (valor >= 1) { // Permite solo valores mayores o iguales a 1
+                                                setPrecio_venta(valor);
+                                                setErrores(prev => ({ ...prev, precio_venta: '' })); // Limpia errores si es válido
+                                            } else {
+                                                setErrores(prev => ({ ...prev, precio_venta: 'El precio de venta debe ser mayor que cero' }));
+                                            }
+                                        }}  
                                     />
                                     {errores.precio_venta && <small className="text-danger">{errores.precio_venta}</small>}
                                 </div>
@@ -221,9 +246,15 @@ const Productos = () => {
                                         className="form-control" 
                                         id="stock" 
                                         value={stock}
-                                        onChange={(e) => {
-                                            setStock(e.target.value);
-                                            validarCampo('stock', e.target.value);
+                                        min="1" // Bloquea la entrada de números menores a 1 en navegadores compatibles
+                                        onChange={(e) =>  {
+                                            const valor = e.target.value;
+                                            if (valor >= 1) { // Permite solo valores mayores o iguales a 1
+                                                setStock(valor);
+                                                setErrores(prev => ({ ...prev, stock: '' })); // Limpia errores si es válido
+                                            } else {
+                                                setErrores(prev => ({ ...prev, stock: 'El stock debe ser un número mayor que cero' }));
+                                            }
                                         }} 
                                     />
                                     {errores.stock && <small className="text-danger">{errores.stock}</small>}
@@ -250,7 +281,20 @@ const Productos = () => {
 
                 {/* Lista de productos */}
                 <div className="col-md-6">
-                    <h3 className="text-center">Listado de Productos</h3>
+                    <h3 className="text-center">Listado de Productos-Servicios</h3>
+                    {/* Input de búsqueda */}
+                    <div className="input-group" style={{ maxWidth: '300px', marginLeft: 'auto' }}>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Buscar productos-servicios"
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                    <button className="btn btn-danger">
+                        <i className="bi bi-search"></i>
+                    </button>
+                    </div>
                     <table className="table table-striped">
                         <thead>
                             <tr>
@@ -263,7 +307,7 @@ const Productos = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productos.map((producto) => (
+                            {filtroProductos.map((producto) => (
                                 <tr key={producto.id}>
                                     <td>{producto.nombre}</td>
                                     <td>{producto.descripcion}</td>
@@ -272,9 +316,9 @@ const Productos = () => {
                                     <td>{producto.stock}</td>
                                     <td>
                                         <button 
-                                            className="btn  btn-danger w-2" 
+                                            className="btn btn-danger w-2" 
                                             onClick={() => eliminarProducto(producto.id)}>
-                                            eliminar
+                                            Eliminar
                                         </button>
                                     </td>
                                 </tr>
